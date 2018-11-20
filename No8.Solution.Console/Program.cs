@@ -70,13 +70,29 @@ namespace No8.Solution.Console
             {
                 System.Console.WriteLine("Enter model of printer");
                 string model = System.Console.ReadLine();
-                printerManager.Add(new CanonPrinter(model));
+                
+                try
+                {
+                    printerManager.Add(new CanonPrinter(model));
+                }
+                catch (ArgumentException e)
+                {
+                    System.Console.WriteLine("Can't add existing printer");
+                }
             }
             if (key.Key == ConsoleKey.D2)
             {
                 System.Console.WriteLine("Enter model of printer");
                 string model = System.Console.ReadLine();
-                printerManager.Add(new EpsonPrinter(model));
+
+                try
+                {
+                    printerManager.Add(new EpsonPrinter(model));
+                }
+                catch (ArgumentException e)
+                {
+                    System.Console.WriteLine("Can't add existing printer");
+                }
             }
             
 
@@ -106,7 +122,14 @@ namespace No8.Solution.Console
                         printer = p;
                 }
 
-                printerManager.Print(printer);
+                try
+                {
+                    printerManager.Print(printer);
+                }
+                catch (ArgumentNullException e)
+                {
+                    System.Console.WriteLine("Can't print on null printer");
+                }
             }
             if (key.Key == ConsoleKey.D2)
             {
@@ -120,7 +143,14 @@ namespace No8.Solution.Console
                         printer = p;
                 }
 
-                printerManager.Print(printer);
+                try
+                {
+                    printerManager.Print(printer);
+                }
+                catch (ArgumentNullException e)
+                {
+                    System.Console.WriteLine("Can't print on null printer");
+                }
             }
             
 

@@ -38,7 +38,7 @@ namespace No8.Solution
                 {
                     Console.WriteLine($"{nameof(newPrinter)} already exists");
                     Log($"Tried to add existing {newPrinter.Name} - {newPrinter.Model}");
-                    return;
+                    throw new ArgumentException();
                 }
             }
 
@@ -58,20 +58,14 @@ namespace No8.Solution
                 Log("Tried to print on null printer");
                 throw new ArgumentNullException($"{nameof(printer)} can't be null");
             }
-
-            if (!Printers.Contains(printer))
-            {
-                Log("Tried to print on non-existing printer");
-                throw new ArgumentException($"{nameof(printer)} must exist");
-            }
-                
+           
             printer.Register(this);
             OnOutputTerminator(new TerminatorEventArgs("Output started at " + DateTime.Now));
-            Log($"Printing started on {printer.Name}-{printer.Model} printer");
+            Log($"Printing started on {printer.Name}-{printer.Model} printer at {DateTime.Now}");
 
             PrintCore(printer);
 
-            Log($"Printing finished on {printer.Name}-{printer.Model} printer");
+            Log($"Printing finished on {printer.Name}-{printer.Model} printer at {DateTime.Now}");
             OnOutputTerminator(new TerminatorEventArgs("Output finished at " + DateTime.Now));
             printer.Unregister(this);
         }
