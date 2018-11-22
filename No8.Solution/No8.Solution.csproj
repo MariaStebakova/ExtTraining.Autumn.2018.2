@@ -43,10 +43,13 @@
   <ItemGroup>
     <Compile Include="CanonPrinter.cs" />
     <Compile Include="EpsonPrinter.cs" />
+    <Compile Include="Loggers\FileLogger.cs" />
+    <Compile Include="Loggers\ILogger.cs" />
     <Compile Include="Printer.cs" />
     <Compile Include="PrinterManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TerminatorEventArgs.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

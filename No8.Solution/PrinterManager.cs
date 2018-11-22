@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using No8.Solution.Loggers;
 
 namespace No8.Solution
 {
@@ -15,16 +16,18 @@ namespace No8.Solution
     public class PrinterManager
     {
         /// <summary>
-        /// Event for notifying abot start and end of the printing
-        /// </summary>
-        public event EventHandler<TerminatorEventArgs> OutputTerminator = delegate { };
-
-        /// <summary>
         /// List of printers
         /// </summary>
         public List<Printer> Printers { get; }
 
-        public PrinterManager() => Printers = new List<Printer>();
+        private readonly ILogger _logger;
+
+        public PrinterManager(ILogger logger)
+        {
+            this._logger = logger;
+            Printers = new List<Printer>();
+        }
+
 
         /// <summary>
         /// Adds new printer to the list of printers
@@ -32,64 +35,70 @@ namespace No8.Solution
         /// <param name="newPrinter">Printer to add</param>
         public void Add(Printer newPrinter)
         {
-            foreach (var printer in Printers)
+            if (Printers.Contains(newPrinter))
             {
-                if (printer.Equals(newPrinter))
-                {
-                    Console.WriteLine($"{nameof(newPrinter)} already exists");
-                    Log($"Tried to add existing {newPrinter.Name} - {newPrinter.Model}");
-                    throw new ArgumentException();
-                }
+                _logger.Log($"Tried to add existing {newPrinter.Name} - {newPrinter.Model}");
+                throw new ArgumentException($"Tried to add existing {newPrinter.Name} - {newPrinter.Model}");
             }
 
             Printers.Add(newPrinter);
-            
-            Log($"Added {newPrinter.Name} - {newPrinter.Model}");
+            Register(newPrinter);
+
+            _logger.Log($"Added {newPrinter.Name} - {newPrinter.Model}");
         }
 
         /// <summary>
         /// Prints the file of the input printer
         /// </summary>
         /// <param name="printer">Printer on which to print</param>
-        public void Print(Printer printer)
+        /// <param name="filePath">Path of file to print</param>
+        public void Print(Printer printer, string filePath)
         {
             if (printer == null)
             {
-                Log("Tried to print on null printer");
+                _logger.Log("Tried to print on null printer");
                 throw new ArgumentNullException($"{nameof(printer)} can't be null");
             }
-           
-            printer.Register(this);
-            OnOutputTerminator(new TerminatorEventArgs("Output started at " + DateTime.Now));
-            Log($"Printing started on {printer.Name}-{printer.Model} printer at {DateTime.Now}");
-
-            PrintCore(printer);
-
-            Log($"Printing finished on {printer.Name}-{printer.Model} printer at {DateTime.Now}");
-            OnOutputTerminator(new TerminatorEventArgs("Output finished at " + DateTime.Now));
-            printer.Unregister(this);
-        }
-        
-        protected void OnOutputTerminator(TerminatorEventArgs eventArgs)
-        {
-            OutputTerminator?.Invoke(this, eventArgs);
+            
+            PrintCore(printer, filePath);
+            
         }
 
-        private void PrintCore(Printer printer)
+        /// <summary>
+        /// Subscribing on the event
+        /// </summary>
+        /// <param name="printer">The owner of the event</param>
+        public void Register(Printer printer)
         {
-            using (OpenFileDialog o = new OpenFileDialog())
-            {
-                o.ShowDialog();
-                using (FileStream f = File.OpenRead(o.FileName))
-                    printer.Print(f);
-            }
+            CheckInput(printer);
+            printer.StartPrint += LogMessage;
+            printer.EndPrint += LogMessage;
         }
 
-        private void Log(string s)
+        /// <summary>
+        /// Unsubscribing on the event
+        /// </summary>
+        /// <param name="printer">The owner of the event</param>
+        public void Unregister(Printer printer)
         {
-            using (FileStream fs = new FileStream("log.txt", FileMode.Append))
-            using (var sr = new StreamWriter(fs))
-                sr.WriteLine(s);  
+            CheckInput(printer);
+            printer.StartPrint -= LogMessage;
+            printer.EndPrint -= LogMessage;
+        }
+
+        private void PrintCore(Printer printer, string filePath)
+        {
+            using (FileStream f = File.OpenRead(filePath))
+                printer.Print(f);
+        }
+
+
+        private void LogMessage(object sender, TerminatorEventArgs eventArgs) => _logger.Log(eventArgs.Message);
+
+        private void CheckInput(Printer printer)
+        {
+            if (printer == null)
+                throw new ArgumentNullException($"{nameof(printer)} can't be null");
         }
     }
 }

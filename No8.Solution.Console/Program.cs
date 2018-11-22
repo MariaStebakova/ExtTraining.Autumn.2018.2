@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using No8.Solution.Loggers;
 
 namespace No8.Solution.Console
 {
@@ -14,7 +16,7 @@ namespace No8.Solution.Console
         [STAThread]
         static void Main(string[] args)
         {
-            printerManager = new PrinterManager();
+            printerManager = new PrinterManager(new FileLogger());
 
             do
             {
@@ -124,7 +126,9 @@ namespace No8.Solution.Console
 
                 try
                 {
-                    printerManager.Print(printer);
+                    OpenFileDialog o = new OpenFileDialog();
+                    o.ShowDialog();
+                    printerManager.Print(printer, o.FileName);
                 }
                 catch (ArgumentNullException e)
                 {
@@ -145,7 +149,9 @@ namespace No8.Solution.Console
 
                 try
                 {
-                    printerManager.Print(printer);
+                    OpenFileDialog o = new OpenFileDialog();
+                    o.ShowDialog();
+                    printerManager.Print(printer, o.FileName);
                 }
                 catch (ArgumentNullException e)
                 {
